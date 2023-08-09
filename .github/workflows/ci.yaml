@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -24,11 +24,13 @@ jobs:
         env:
           ENDPOINT_URL: "https://submissions.tonsmartchallenge4.com/tsc-4"  # Replace with your actual endpoint URL
         run: |
-          response=$(curl -s -w "%{http_code}" --max-time 600 -X POST -H "Content-Type: multipart/form-data" -F "file=@code.zip" -F "token=${{secrets.USER_TOKEN}}" -F "github=${{github.repository_owner}}" $ENDPOINT_URL)
+          response=$(curl -s -w "%{http_code}" --max-time 900 -X POST -H "Content-Type: multipart/form-data" -F "file=@code.zip" -F "token=${{secrets.USER_TOKEN}}" -F "github=${{github.repository_owner}}" $ENDPOINT_URL)
           status_code=${response: -3}
 
           # Extracting the JSON response body (excluding the status code)
           json_response==${response:0:-3}
+
+          echo "$json_response"
 
           # Storing the JSON response in the response.log file
           echo "$json_response" > response.log
