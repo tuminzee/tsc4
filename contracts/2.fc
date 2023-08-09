@@ -9,11 +9,42 @@
   After calculating the result matrix, the function should return final result (as tuple).
 -}
 
+#include "./imports/stdlib.fc";
+
+forall X -> X tget(tuple t, int idx) asm "INDEXVAR";
+int tlen(tuple t) asm "TLEN";
+
 () recv_internal() {
 }
 
 ;; testable
 (tuple) matrix_multiplier(tuple matrixA, tuple matrixB) method_id {
-  return null();
-}
+    tuple result = empty_tuple();
 
+    (int i, int j, int k) = (0, 0, 0);
+    (int n, int m, int p) = (tlen(matrixA), tlen(matrixB), tlen(tget(matrixB, 0)));
+
+    while (i < n) {
+        tuple row = empty_tuple();
+
+        while (j < p) {
+            int s = 0;
+            while (k < m) {
+                s += tget(tget(matrixA, i), k) * tget(tget(matrixB, k), j);
+                k += 1;
+            }
+
+            row~tpush(s);
+            k = 0;
+
+            j += 1;
+        }
+
+        result~tpush(row);
+        j = 0;
+
+        i += 1;
+    }
+
+    return result;
+}
