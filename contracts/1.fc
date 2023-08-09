@@ -6,37 +6,26 @@
   this branch should be returned. Return empty cell if the branch is not found.
 -}
 
-#include "imports/stdlib.fc";
+forall X -> int is_null(X x) asm "ISNULL";
 
 () recv_internal() {
 }
 
-cell recusrive_find_hash(int hash, cell data) {
-    if (cell_hash(data) == hash) {
-        return data;
-    }
-    slice s = data.begin_parse();
-    int i = 0;
-    int n = slice_refs(s);
-
-    while (i < n) {
-        cell curr = recusrive_find_hash(hash, s~load_ref());
-        if (cell_null?(curr) != -1) {
-            return curr;
-        }
-        i += 1;
-    }
-
-    return null();
-}
-
 ;; testable
 (cell) find_branch_by_hash(int hash, cell tree) method_id {
-    cell result = recusrive_find_hash(hash, tree);
+    tuple lst = cons(tree, null());
 
-    if (cell_null?(result)) {
-        return begin_cell().end_cell();
-    } else {
-        return result;
+    while (~ is_null(lst)) {
+        cell node = lst~list_next();
+        if (cell_hash(node) == hash) {
+            return node;
+        }
+
+        slice s = node.begin_parse();
+        while (~ slice_refs_empty?(s)) {
+            lst = cons(s~load_ref(), lst);
+        }
     }
+
+    return begin_cell().end_cell();
 }
