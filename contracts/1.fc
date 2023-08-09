@@ -6,10 +6,37 @@
   this branch should be returned. Return empty cell if the branch is not found.
 -}
 
+#include "imports/stdlib.fc";
+
 () recv_internal() {
+}
+
+cell recusrive_find_hash(int hash, cell data) {
+    if (cell_hash(data) == hash) {
+        return data;
+    }
+    slice s = data.begin_parse();
+    int i = 0;
+    int n = slice_refs(s);
+
+    while (i < n) {
+        cell curr = recusrive_find_hash(hash, s~load_ref());
+        if (cell_null?(curr) != -1) {
+            return curr;
+        }
+        i += 1;
+    }
+
+    return null();
 }
 
 ;; testable
 (cell) find_branch_by_hash(int hash, cell tree) method_id {
-  return begin_cell().end_cell();
+    cell result = recusrive_find_hash(hash, tree);
+
+    if (cell_null?(result)) {
+        return begin_cell().end_cell();
+    } else {
+        return result;
+    }
 }
