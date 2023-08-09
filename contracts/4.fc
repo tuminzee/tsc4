@@ -9,13 +9,47 @@
 () recv_internal() {
 }
 
+(int) shifted(int ch, int shift) inline {
+    if ((ch >= 97) & (ch <= 122)) {
+        return (ch - 97 + shift) % 26 + 97;
+    } else {
+        if ((ch >= 65) & (ch <= 90)) {
+            return (ch - 65 + shift) % 26 + 65;
+        } else {
+            return ch;
+        }
+    }
+}
+
+(cell) convert(builder b, slice s, int shift) {
+    while (~ slice_data_empty?(s)) {
+        int ch = s~load_uint(8);
+        b = b.store_uint(shifted(ch, shift), 8);
+    }
+
+    if (~ slice_refs_empty?(s)) {
+        builder nextb = begin_cell();
+        slice nexts = s.preload_ref().begin_parse();
+        b = b.store_ref(convert(nextb, nexts, shift));
+    }
+
+    return b.end_cell();
+}
+
 ;; testable
 (cell) caesar_cipher_encrypt(int shift, cell text) method_id {
-  return begin_cell().end_cell();
+    slice s = text.begin_parse();
+    int op = s~load_uint(32);
+
+    builder b = begin_cell().store_uint(op, 32);
+    return convert(b, s, shift);
 }
 
 ;; testable
 (cell) caesar_cipher_decrypt(int shift, cell text) method_id {
-  return begin_cell().end_cell();
-}
+    slice s = text.begin_parse();
+    int op = s~load_uint(32);
 
+    builder b = begin_cell().store_uint(op, 32);
+    return convert(b, s, 26 - shift);
+}
