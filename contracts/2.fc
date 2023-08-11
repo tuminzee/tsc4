@@ -20,26 +20,26 @@ int tlen(tuple t) asm "TLEN";
     tuple result = empty_tuple();
 
     (int i, int j, int k) = (0, 0, 0);
-    (int n, int m, int p) = (tlen(matrixA), tlen(matrixB), tlen(tget(matrixB, 0)));
+    (int n, int m, int p) = (tlen(matrixA), tlen(matrixB), tlen(matrixB.at(0)));
 
-    while (i < n) {
+    repeat (n) {
         tuple row = empty_tuple();
 
-        while (j < p) {
+        repeat (p) {
             int s = 0;
-            while (k < m) {
-                s += tget(tget(matrixA, i), k) * tget(tget(matrixB, k), j);
+            repeat (m) {
+                s += matrixA.at(i).at(k) * matrixB.at(k).at(j);
                 k += 1;
             }
 
-            row~tpush(s);
             k = 0;
+            row~tpush(s);
 
             j += 1;
         }
 
-        result~tpush(row);
         j = 0;
+        result~tpush(row);
 
         i += 1;
     }

@@ -1,7 +1,7 @@
 {-
   TASK 5 - Fibonacci sequence
   Implement a function that generates the Fibonacci
-  sequence from N to N+K terms (0<=N<=370; 0<=N+K<=370; 0<=K<=255).
+  sequence from N to N+K terms (0<=N<=370; 0<=N+K<=371; 0<=K<=255).
   The first two terms of the Fibonacci sequence are F_0 = 0 and F_1 = 1,
   and the rest are defined as F_n = F_(n-1) + F_(n-2).
   The resulting Fibonacci sequence should be stored in a tuple.
@@ -12,9 +12,39 @@
   1188518561323126046432205871807859915657177,
   1923063428480944139667114773918309212080528]
 -}
-int tlen(tuple t) asm "TLEN";
+
+forall X -> (tuple) to_tuple (X x) asm "NOP";
 
 () recv_internal() {
+}
+
+(int, int) doubling(int n) inline {
+    int h = 0;
+    int i = n;
+
+    while (i > 0) {
+        h += 1;
+        i >>= 1;
+    }
+
+    (int a, int b) = (0, 1);
+
+    int mask = (h > 0) ? 1 << (h - 1) : 0;
+    while (mask > 0) {
+        int c = a * (2 * b - a);
+        int d = a * a + b * b;
+
+        if (mask & n) {
+            a = d;
+            b = c + d;
+        } else {
+            a = c;
+            b = d;
+        }
+        mask >>= 1;
+    }
+
+    return (a, b);
 }
 
 ;; testable
@@ -23,18 +53,18 @@ int tlen(tuple t) asm "TLEN";
         return empty_tuple();
     }
 
-    (int a, int b) = (0, 1);
-    repeat (n - 1) {
-        (a, b) = (b, a + b);
+    if (n == 370) {
+        return to_tuple([94611056096305838013295371573764256526437182762229865607320618320601813254535]);
     }
 
-    var t = empty_tuple();
-    if (n <= 0) {
-        t~tpush(a);
+    (int a, int b) = doubling(n);
+    tuple t = to_tuple([a]);
+
+    if (k > 1) {
+        t~tpush(b);
     }
 
-    t~tpush(b);
-    repeat (k - tlen(t)) {
+    repeat (k - 2) {
         (a, b) = (b, a + b);
         t~tpush(b);
     }
