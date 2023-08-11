@@ -9,7 +9,6 @@
   After calculating the result matrix, the function should return final result (as tuple).
 -}
 
-forall X -> X tget(tuple t, int idx) asm "INDEXVAR";
 int tlen(tuple t) asm "TLEN";
 
 () recv_internal() {
